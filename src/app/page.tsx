@@ -3,19 +3,30 @@
 import Footer from "@/components/custom/base/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import html2canvas from "html2canvas";
 import { Camera, Download, Eye, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import jsPDF from "jspdf";
 
 export default function Home() {
+  const router = useRouter();
+  const resumeRef = useRef<HTMLDivElement>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-  // const router = useRouter();
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const [resumeId, setResumeId] = useState<string>(() => {
     // Check if we're in the browser and if there's an ID in the URL
@@ -23,6 +34,7 @@ export default function Home() {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get("id") || uuidv4();
     }
+
     return uuidv4();
   });
 
@@ -198,6 +210,93 @@ export default function Home() {
         ...formData,
         skills: newSkills,
       });
+    }
+  };
+
+  const exportToPDF = async () => {
+    try {
+      // First open the preview dialog
+      setPreviewOpen(true);
+
+      // Wait for the dialog to be fully rendered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const resumeElement = document.getElementById("resume-preview");
+
+      console.log("resumeElement", resumeElement);
+
+      if (!resumeElement) {
+        console.error("Resume preview element not found");
+        setPreviewOpen(false);
+        return;
+      }
+
+      // Create a clone of the element to avoid modifying the original
+      const clone = resumeElement.cloneNode(true) as HTMLElement;
+      clone.style.width = "794px"; // A4 width in pixels at 96 DPI
+      clone.style.height = "1123px"; // A4 height
+      clone.style.position = "absolute";
+      clone.style.top = "-9999px";
+      clone.style.left = "-9999px";
+      document.body.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+
+      document.body.removeChild(clone);
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save(`resume-${formData.personalInfo.name || "untitled"}.pdf`);
+
+      // Close the preview dialog after export
+      setPreviewOpen(false);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+      setPreviewOpen(false);
+    }
+  };
+
+  const saveResume = () => {
+    try {
+      // Save to localStorage
+      localStorage.setItem(
+        `resume-${resumeId}`,
+        JSON.stringify({
+          formData,
+          photo,
+          lastUpdated: new Date().toISOString(),
+        })
+      );
+
+      // If we're not already on a URL with this ID, update the URL
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("id") !== resumeId) {
+          router.push(`?id=${resumeId}`);
+        }
+      }
+
+      alert(
+        "Resume saved successfully! You can bookmark this URL to access your resume later."
+      );
+    } catch (error) {
+      console.error("Error saving resume:", error);
+      alert("There was an error saving your resume. Please try again.");
     }
   };
 
@@ -641,7 +740,7 @@ export default function Home() {
                   <h3 className="font-medium text-center">Actions</h3>
 
                   <Button
-                    // onClick={() => setPreviewOpen(true)}
+                    onClick={() => setPreviewOpen(true)}
                     className="w-full"
                     variant="outline"
                   >
@@ -649,16 +748,13 @@ export default function Home() {
                     Preview Resume
                   </Button>
 
-                  <Button
-                    // onClick={exportToPDF}
-                    className="w-full"
-                  >
+                  <Button onClick={exportToPDF} className="w-full">
                     <Download className="w-4 h-4 mr-2" />
                     Export to PDF
                   </Button>
 
                   <Button
-                    // onClick={saveResume}
+                    onClick={saveResume}
                     className="w-full"
                     variant="secondary"
                   >
@@ -673,6 +769,153 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Resume Preview</DialogTitle>
+          </DialogHeader>
+
+          <ScrollArea className="h-[70vh]">
+            <div ref={resumeRef} id="resume-preview" className="bg-white p-8">
+              <div className="flex flex-col md:flex-row gap-6 mb-6">
+                {photo && (
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
+                    <Image
+                      src={photo || "/placeholder.svg"}
+                      alt="Profile"
+                      width={128}
+                      height={128}
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-grow text-center md:text-left">
+                  <h1 className="text-2xl font-bold">
+                    {formData.personalInfo.name || "Your Name"}
+                  </h1>
+                  <p className="text-gray-600 mb-2">
+                    {formData.personalInfo.title || "Professional Title"}
+                  </p>
+                  <div className="text-sm space-y-1">
+                    {formData.personalInfo.email && (
+                      <p>{formData.personalInfo.email}</p>
+                    )}
+                    {formData.personalInfo.phone && (
+                      <p>{formData.personalInfo.phone}</p>
+                    )}
+                    {formData.personalInfo.address && (
+                      <p>{formData.personalInfo.address}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {formData.personalInfo.summary && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                    Professional Summary
+                  </h2>
+                  <p className="text-sm">{formData.personalInfo.summary}</p>
+                </div>
+              )}
+
+              {formData.experience.some(
+                (exp) => exp.company || exp.position
+              ) && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                    Work Experience
+                  </h2>
+                  {formData.experience.map(
+                    (exp, index) =>
+                      (exp.company || exp.position) && (
+                        <div key={index} className="mb-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
+                            <div>
+                              <h3 className="font-medium">
+                                {exp.position || "Position"}
+                              </h3>
+                              <p className="text-sm">
+                                {exp.company || "Company"}
+                                {exp.location && `, ${exp.location}`}
+                              </p>
+                            </div>
+                            {(exp.startDate || exp.endDate) && (
+                              <p className="text-sm text-gray-600">
+                                {exp.startDate || "Start Date"} -{" "}
+                                {exp.endDate || "End Date"}
+                              </p>
+                            )}
+                          </div>
+                          {exp.description && (
+                            <p className="text-sm mt-1">{exp.description}</p>
+                          )}
+                        </div>
+                      )
+                  )}
+                </div>
+              )}
+
+              {formData.education.some((edu) => edu.school || edu.degree) && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                    Education
+                  </h2>
+                  {formData.education.map(
+                    (edu, index) =>
+                      (edu.school || edu.degree) && (
+                        <div key={index} className="mb-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
+                            <div>
+                              <h3 className="font-medium">
+                                {edu.degree || "Degree"}
+                                {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
+                              </h3>
+                              <p className="text-sm">
+                                {edu.school || "School/University"}
+                              </p>
+                            </div>
+                            {(edu.startDate || edu.endDate) && (
+                              <p className="text-sm text-gray-600">
+                                {edu.startDate || "Start Date"} -{" "}
+                                {edu.endDate || "End Date"}
+                              </p>
+                            )}
+                          </div>
+                          {edu.description && (
+                            <p className="text-sm mt-1">{edu.description}</p>
+                          )}
+                        </div>
+                      )
+                  )}
+                </div>
+              )}
+
+              {formData.skills.some((skill) => skill) && (
+                <div>
+                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                    Skills
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.skills.map(
+                      (skill, index) =>
+                        skill && (
+                          <span
+                            key={index}
+                            className="bg-gray-100 px-3 py-1 rounded-full text-sm"
+                          >
+                            {skill}
+                          </span>
+                        )
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
