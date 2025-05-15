@@ -30,7 +30,7 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
         </DialogHeader>
 
         <ScrollArea className="h-[70vh]">
-          <div className="bg-white pr-4">
+          <div id="resume-preview" className="bg-white pr-4">
             <div className="flex flex-col md:flex-row gap-6 mb-6">
               {photo && (
                 <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">

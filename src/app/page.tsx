@@ -208,59 +208,65 @@ export default function Home() {
   };
 
   const exportToPDF = async () => {
+    setPreviewOpen(true);
+
+    // Wait for the dialog to be fully rendered
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     try {
-      // First open the preview dialog
-      setPreviewOpen(true);
+      // Show loading toast
+      toast.loading("Generating PDF...");
 
-      // Wait for the dialog to be fully rendered
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const resumeElement = document.getElementById("resume-preview");
-
-      console.log("resumeElement", resumeElement);
-
-      if (!resumeElement) {
-        console.error("Resume preview element not found");
-        setPreviewOpen(false);
-        return;
+      // Get the preview element
+      const previewElement = document.getElementById("resume-preview");
+      if (!previewElement) {
+        throw new Error("Preview element not found");
       }
 
-      // Create a clone of the element to avoid modifying the original
-      const clone = resumeElement.cloneNode(true) as HTMLElement;
-      clone.style.width = "794px"; // A4 width in pixels at 96 DPI
-      clone.style.height = "1123px"; // A4 height
-      clone.style.position = "absolute";
-      clone.style.top = "-9999px";
-      clone.style.left = "-9999px";
-      document.body.appendChild(clone);
-
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
+      // Create a canvas from the preview element
+      const canvas = await html2canvas(previewElement, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true, // Enable CORS for images
         logging: false,
       });
 
-      document.body.removeChild(clone);
-
-      const imgData = canvas.toDataURL("image/png");
+      // Create PDF with A4 dimensions
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
+      // Calculate dimensions to fit the content properly
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save(`resume-${formData.personalInfo.name || "untitled"}.pdf`);
+      // Add the image to the PDF
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 1.0),
+        "JPEG",
+        0,
+        0,
+        imgWidth,
+        imgHeight
+      );
 
-      // Close the preview dialog after export
-      setPreviewOpen(false);
+      // Generate filename based on user's name or default
+      const filename = formData.personalInfo.name
+        ? `${formData.personalInfo.name
+            .toLowerCase()
+            .replace(/\s+/g, "-")}-resume.pdf`
+        : "resume.pdf";
+
+      // Save the PDF
+      pdf.save(filename);
+
+      toast.success("PDF downloaded successfully!");
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
+      toast.error("Failed to generate PDF. Please try again.");
+    } finally {
+      // Close the preview dialog
       setPreviewOpen(false);
     }
   };
