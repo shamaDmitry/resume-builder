@@ -3,31 +3,26 @@
 import Footer from "@/components/custom/base/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import html2canvas from "html2canvas";
 import { Camera, Download, Eye, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
+import { IResumeData } from "@/types";
+import { toast } from "sonner";
+import PreviewDialog from "@/components/custom/preview-dialog";
 
 export default function Home() {
   const router = useRouter();
-  const resumeRef = useRef<HTMLDivElement>(null);
+
   const [photo, setPhoto] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-
   const [resumeId, setResumeId] = useState<string>(() => {
     // Check if we're in the browser and if there's an ID in the URL
     if (typeof window !== "undefined") {
@@ -37,8 +32,7 @@ export default function Home() {
 
     return uuidv4();
   });
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<IResumeData>({
     personalInfo: {
       name: "",
       title: "",
@@ -286,12 +280,13 @@ export default function Home() {
       // If we're not already on a URL with this ID, update the URL
       if (typeof window !== "undefined") {
         const urlParams = new URLSearchParams(window.location.search);
+
         if (urlParams.get("id") !== resumeId) {
           router.push(`?id=${resumeId}`);
         }
       }
 
-      alert(
+      toast(
         "Resume saved successfully! You can bookmark this URL to access your resume later."
       );
     } catch (error) {
@@ -335,14 +330,50 @@ export default function Home() {
     }
   }, []);
 
-  console.log("resumeId", resumeId);
+  const handlePreFill = () => {
+    setFormData({
+      personalInfo: {
+        name: "Name Surname",
+        title: "developer",
+        email: "test@test.com",
+        phone: "123-456-7890",
+        address: "123 Main St, City, Country",
+        summary:
+          "Experienced developer with a passion for building web applications.",
+      },
+      education: [
+        {
+          school: "University of Example",
+          degree: "Bachelor of Science",
+          fieldOfStudy: "Computer Science",
+          startDate: "2015-09-01",
+          endDate: "2019-05-15",
+          description: "Studied computer science and software engineering.",
+        },
+      ],
+      experience: [
+        {
+          company: "Example Inc.",
+          position: "Software Engineer",
+          location: "City, Country",
+          startDate: "2019-06-01",
+          endDate: "2022-01-01",
+          description:
+            "Worked on various web applications and contributed to open-source projects.",
+        },
+      ],
+      skills: ["JavaScript", "React", "Node.js", "HTML", "CSS"],
+    });
+  };
 
   return (
     <>
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4">
-          <h1 className="text-3xl font-bold mb-6 text-center">
-            Resume Builder
+          <h1 className="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
+            <span>Resume Builder</span>
+
+            <Button onClick={handlePreFill}>Pre-fill</Button>
           </h1>
 
           <div className="flex flex-col lg:flex-row gap-6">
@@ -412,7 +443,7 @@ export default function Home() {
                             <Input
                               id="name"
                               name="name"
-                              value={formData.personalInfo.name}
+                              value={formData?.personalInfo?.name}
                               onChange={handlePersonalInfoChange}
                               placeholder="John Doe"
                             />
@@ -422,7 +453,7 @@ export default function Home() {
                             <Input
                               id="title"
                               name="title"
-                              value={formData.personalInfo.title}
+                              value={formData?.personalInfo?.title}
                               onChange={handlePersonalInfoChange}
                               placeholder="Software Engineer"
                             />
@@ -433,7 +464,7 @@ export default function Home() {
                               id="email"
                               name="email"
                               type="email"
-                              value={formData.personalInfo.email}
+                              value={formData?.personalInfo?.email}
                               onChange={handlePersonalInfoChange}
                               placeholder="john.doe@example.com"
                             />
@@ -443,7 +474,7 @@ export default function Home() {
                             <Input
                               id="phone"
                               name="phone"
-                              value={formData.personalInfo.phone}
+                              value={formData?.personalInfo?.phone}
                               onChange={handlePersonalInfoChange}
                               placeholder="(123) 456-7890"
                             />
@@ -453,7 +484,7 @@ export default function Home() {
                             <Input
                               id="address"
                               name="address"
-                              value={formData.personalInfo.address}
+                              value={formData?.personalInfo?.address}
                               onChange={handlePersonalInfoChange}
                               placeholder="123 Main St, City, State, Zip"
                             />
@@ -465,7 +496,7 @@ export default function Home() {
                             <Textarea
                               id="summary"
                               name="summary"
-                              value={formData.personalInfo.summary}
+                              value={formData?.personalInfo?.summary}
                               onChange={handlePersonalInfoChange}
                               placeholder="Write a brief summary of your professional background and goals..."
                               rows={4}
@@ -478,23 +509,25 @@ export default function Home() {
                 </TabsContent>
 
                 <TabsContent value="education" className="space-y-6">
-                  {formData.education.map((edu, index) => (
+                  {formData?.education?.map((edu, index) => (
                     <Card key={index}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="font-medium">
                             Education #{index + 1}
                           </h3>
-                          {formData.education.length > 1 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeEducation(index)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Remove
-                            </Button>
-                          )}
+
+                          {formData.education &&
+                            formData?.education?.length > 1 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeEducation(index)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Remove
+                              </Button>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -586,23 +619,25 @@ export default function Home() {
                 </TabsContent>
 
                 <TabsContent value="experience" className="space-y-6">
-                  {formData.experience.map((exp, index) => (
+                  {formData?.experience?.map((exp, index) => (
                     <Card key={index}>
                       <CardContent className="pt-6">
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="font-medium">
                             Experience #{index + 1}
                           </h3>
-                          {formData.experience.length > 1 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeExperience(index)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Remove
-                            </Button>
-                          )}
+
+                          {formData.experience &&
+                            formData?.experience?.length > 1 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeExperience(index)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Remove
+                              </Button>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -699,7 +734,7 @@ export default function Home() {
                       <div className="space-y-4">
                         <h3 className="font-medium">Skills</h3>
 
-                        {formData.skills.map((skill, index) => (
+                        {formData?.skills?.map((skill, index) => (
                           <div key={index} className="flex gap-2">
                             <Input
                               value={skill}
@@ -708,15 +743,16 @@ export default function Home() {
                                 index + 1
                               } (e.g., JavaScript, Project Management)`}
                             />
-                            {formData.skills.length > 1 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => removeSkill(index)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
+                            {formData?.skills &&
+                              formData?.skills?.length > 1 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => removeSkill(index)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                           </div>
                         ))}
 
@@ -770,152 +806,12 @@ export default function Home() {
 
       <Footer />
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Resume Preview</DialogTitle>
-          </DialogHeader>
-
-          <ScrollArea className="h-[70vh]">
-            <div ref={resumeRef} id="resume-preview" className="bg-white p-8">
-              <div className="flex flex-col md:flex-row gap-6 mb-6">
-                {photo && (
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
-                    <Image
-                      src={photo || "/placeholder.svg"}
-                      alt="Profile"
-                      width={128}
-                      height={128}
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <div className="flex-grow text-center md:text-left">
-                  <h1 className="text-2xl font-bold">
-                    {formData.personalInfo.name || "Your Name"}
-                  </h1>
-                  <p className="text-gray-600 mb-2">
-                    {formData.personalInfo.title || "Professional Title"}
-                  </p>
-                  <div className="text-sm space-y-1">
-                    {formData.personalInfo.email && (
-                      <p>{formData.personalInfo.email}</p>
-                    )}
-                    {formData.personalInfo.phone && (
-                      <p>{formData.personalInfo.phone}</p>
-                    )}
-                    {formData.personalInfo.address && (
-                      <p>{formData.personalInfo.address}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {formData.personalInfo.summary && (
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                    Professional Summary
-                  </h2>
-                  <p className="text-sm">{formData.personalInfo.summary}</p>
-                </div>
-              )}
-
-              {formData.experience.some(
-                (exp) => exp.company || exp.position
-              ) && (
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                    Work Experience
-                  </h2>
-                  {formData.experience.map(
-                    (exp, index) =>
-                      (exp.company || exp.position) && (
-                        <div key={index} className="mb-4">
-                          <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                            <div>
-                              <h3 className="font-medium">
-                                {exp.position || "Position"}
-                              </h3>
-                              <p className="text-sm">
-                                {exp.company || "Company"}
-                                {exp.location && `, ${exp.location}`}
-                              </p>
-                            </div>
-                            {(exp.startDate || exp.endDate) && (
-                              <p className="text-sm text-gray-600">
-                                {exp.startDate || "Start Date"} -{" "}
-                                {exp.endDate || "End Date"}
-                              </p>
-                            )}
-                          </div>
-                          {exp.description && (
-                            <p className="text-sm mt-1">{exp.description}</p>
-                          )}
-                        </div>
-                      )
-                  )}
-                </div>
-              )}
-
-              {formData.education.some((edu) => edu.school || edu.degree) && (
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                    Education
-                  </h2>
-                  {formData.education.map(
-                    (edu, index) =>
-                      (edu.school || edu.degree) && (
-                        <div key={index} className="mb-4">
-                          <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                            <div>
-                              <h3 className="font-medium">
-                                {edu.degree || "Degree"}
-                                {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
-                              </h3>
-                              <p className="text-sm">
-                                {edu.school || "School/University"}
-                              </p>
-                            </div>
-                            {(edu.startDate || edu.endDate) && (
-                              <p className="text-sm text-gray-600">
-                                {edu.startDate || "Start Date"} -{" "}
-                                {edu.endDate || "End Date"}
-                              </p>
-                            )}
-                          </div>
-                          {edu.description && (
-                            <p className="text-sm mt-1">{edu.description}</p>
-                          )}
-                        </div>
-                      )
-                  )}
-                </div>
-              )}
-
-              {formData.skills.some((skill) => skill) && (
-                <div>
-                  <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                    Skills
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skills.map(
-                      (skill, index) =>
-                        skill && (
-                          <span
-                            key={index}
-                            className="bg-gray-100 px-3 py-1 rounded-full text-sm"
-                          >
-                            {skill}
-                          </span>
-                        )
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <PreviewDialog
+        previewOpen={previewOpen}
+        setPreviewOpen={setPreviewOpen}
+        formData={formData}
+        photo={photo}
+      />
     </>
   );
 }

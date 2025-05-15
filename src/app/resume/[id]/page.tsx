@@ -8,10 +8,15 @@ import { Card } from "@/components/ui/card";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { use } from "react";
+import { IResumeData } from "@/types";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [loading, setLoading] = useState(true);
-  const [resumeData, setResumeData] = useState<any>(null);
+  const [resumeData, setResumeData] = useState<{
+    formData: IResumeData;
+    photo: string | null;
+    lastUpdated: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { id } = use(params);
 
@@ -24,6 +29,9 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
           if (savedResume) {
             const parsed = JSON.parse(savedResume);
+
+            console.log("parsed", parsed);
+
             setResumeData(parsed);
             setLoading(false);
             return;
@@ -163,15 +171,13 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          {formData.experience.some(
-            (exp: any) => exp.company || exp.position
-          ) && (
+          {formData.experience.some((exp) => exp.company || exp.position) && (
             <div className="mb-6">
               <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                 Work Experience
               </h2>
               {formData.experience.map(
-                (exp: any, index: number) =>
+                (exp, index: number) =>
                   (exp.company || exp.position) && (
                     <div key={index} className="mb-4">
                       <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
@@ -200,13 +206,13 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          {formData.education.some((edu: any) => edu.school || edu.degree) && (
+          {formData.education.some((edu) => edu.school || edu.degree) && (
             <div className="mb-6">
               <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                 Education
               </h2>
               {formData.education.map(
-                (edu: any, index: number) =>
+                (edu, index) =>
                   (edu.school || edu.degree) && (
                     <div key={index} className="mb-4">
                       <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
