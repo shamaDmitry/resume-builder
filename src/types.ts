@@ -28,6 +28,7 @@ export interface IExperience {
 export type Skills = string[];
 
 export interface IResumeData {
+  photo: string;
   personalInfo: IPersonalInfo;
   education: IEducation[];
   experience: IExperience[];
