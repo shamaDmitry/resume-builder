@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { TabsContent } from "@/components/ui/tabs";
-import { Trash2 } from "lucide-react";
 import React from "react";
 
 const SkillsTab = () => {

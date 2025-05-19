@@ -35,8 +35,6 @@ const EducationTab = () => {
       },
     ];
 
-    console.log("newEducation", newEducation);
-
     setValue("education", newEducation);
   };
 
@@ -45,8 +43,6 @@ const EducationTab = () => {
     newEducation.splice(index, 1);
     setValue("education", newEducation);
   };
-
-  console.log("formData", formData);
 
   return (
     <TabsContent value="education" className="space-y-6">

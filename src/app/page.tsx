@@ -14,7 +14,6 @@ import { toast } from "sonner";
 import PreviewDialog from "@/components/custom/preview-dialog";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
-import UploadAvatar from "@/components/custom/upload-avatar";
 
 export default function Home() {
   const methods = useForm<IResumeData>({
@@ -161,27 +160,27 @@ export default function Home() {
     }
   };
 
-  const loadResume = (id: string) => {
-    try {
-      const savedResume = localStorage.getItem(`resume-${id}`);
-
-      if (savedResume) {
-        const { formData: savedFormData, photo: savedPhoto } =
-          JSON.parse(savedResume);
-
-        methods.reset(savedFormData);
-        setPhoto(savedPhoto);
-
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error loading resume:", error);
-      return false;
-    }
-  };
-
   useEffect(() => {
+    const loadResume = (id: string) => {
+      try {
+        const savedResume = localStorage.getItem(`resume-${id}`);
+
+        if (savedResume) {
+          const { formData: savedFormData, photo: savedPhoto } =
+            JSON.parse(savedResume);
+
+          methods.reset(savedFormData);
+          setPhoto(savedPhoto);
+
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error("Error loading resume:", error);
+        return false;
+      }
+    };
+
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get("id");
@@ -194,7 +193,7 @@ export default function Home() {
         }
       }
     }
-  }, []);
+  }, [methods]);
 
   const handlePreFill = () => {
     methods.reset({

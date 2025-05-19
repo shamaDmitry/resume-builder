@@ -9,9 +9,10 @@ import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import FormError from "@/components/custom/form-error";
 import UploadAvatar from "../upload-avatar";
+import { IResumeData } from "@/types";
 
 const PersonalTab = () => {
-  const methods = useFormContext(); // retrieve those props
+  const methods = useFormContext<IResumeData>();
 
   const {
     register,
@@ -19,10 +20,6 @@ const PersonalTab = () => {
   } = methods;
 
   const [photo, setPhoto] = useState<string | null>(null);
-
-  const photoInput = register("personalInfo.photo", {
-    required: { value: true, message: "Photo is required" },
-  });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -64,7 +61,9 @@ const PersonalTab = () => {
                 />
 
                 {errors.personalInfo?.name && (
-                  <FormError message={errors.personalInfo.name.message} />
+                  <FormError
+                    message={errors.personalInfo?.name?.message as string}
+                  />
                 )}
               </div>
 
@@ -86,7 +85,7 @@ const PersonalTab = () => {
 
                 {errors.personalInfo?.title && (
                   <p className="text-red-500 text-sm">
-                    {errors.personalInfo?.title.message}
+                    {errors.personalInfo?.title?.message as string}
                   </p>
                 )}
               </div>
@@ -110,7 +109,7 @@ const PersonalTab = () => {
 
                 {errors.personalInfo?.email && (
                   <p className="text-red-500 text-sm">
-                    {errors.personalInfo.email.message}
+                    {errors.personalInfo?.email?.message as string}
                   </p>
                 )}
               </div>
@@ -133,7 +132,7 @@ const PersonalTab = () => {
 
                 {errors.personalInfo?.phone && (
                   <p className="text-red-500 text-sm">
-                    {errors.personalInfo.phone.message}
+                    {errors.personalInfo?.phone?.message as string}
                   </p>
                 )}
               </div>
