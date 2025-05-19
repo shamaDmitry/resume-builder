@@ -1,16 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2 } from "lucide-react";
-import Image from "next/image";
 import React, { useState } from "react";
-import { useFormContext, FieldError } from "react-hook-form";
-import FormError from "../form-error";
+import { useFormContext } from "react-hook-form";
+import FormError from "@/components/custom/form-error";
+import UploadAvatar from "../upload-avatar";
 
 const PersonalTab = () => {
   const methods = useFormContext(); // retrieve those props
@@ -45,6 +43,12 @@ const PersonalTab = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
+            <UploadAvatar
+              photo={photo}
+              setPhoto={setPhoto}
+              handlePhotoChange={handlePhotoChange}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label required htmlFor="name">
@@ -82,7 +86,7 @@ const PersonalTab = () => {
 
                 {errors.personalInfo?.title && (
                   <p className="text-red-500 text-sm">
-                    {errors.personalInfo.title.message}
+                    {errors.personalInfo?.title.message}
                   </p>
                 )}
               </div>

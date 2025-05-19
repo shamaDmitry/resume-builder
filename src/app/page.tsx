@@ -3,13 +3,8 @@
 import Footer from "@/components/custom/base/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import html2canvas from "html2canvas";
-import { Camera, Download, Eye, Save, Trash2 } from "lucide-react";
-import Image from "next/image";
+import { Download, Eye, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -17,16 +12,46 @@ import jsPDF from "jspdf";
 import { IResumeData } from "@/types";
 import { toast } from "sonner";
 import PreviewDialog from "@/components/custom/preview-dialog";
-import PersonalTab from "@/components/custom/tabs/personal-tab";
-import EducationTab from "@/components/custom/tabs/education-tab";
-import ExperienceTab from "@/components/custom/tabs/experience-tab";
-import SkillsTab from "@/components/custom/tabs/skills-tab";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
+import UploadAvatar from "@/components/custom/upload-avatar";
 
 export default function Home() {
+  const methods = useForm<IResumeData>({
+    defaultValues: {
+      photo: "",
+      personalInfo: {
+        name: "",
+        title: "",
+        email: "",
+        phone: "",
+        address: "",
+        summary: "",
+      },
+      education: [
+        {
+          school: "",
+          degree: "",
+          fieldOfStudy: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        },
+      ],
+      experience: [
+        {
+          company: "",
+          position: "",
+          location: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        },
+      ],
+      skills: [""],
+    },
+  });
   const router = useRouter();
-
   const [photo, setPhoto] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [resumeId, setResumeId] = useState<string>(() => {
@@ -39,191 +64,136 @@ export default function Home() {
     return uuidv4();
   });
 
-  const addEducation = () => {
-    // setFormData({
-    //   ...formData,
-    //   education: [
-    //     ...formData.education,
-    //     {
-    //       school: "",
-    //       degree: "",
-    //       fieldOfStudy: "",
-    //       startDate: "",
-    //       endDate: "",
-    //       description: "",
-    //     },
-    //   ],
-    // });
-  };
-
-  const removeEducation = (index: number) => {
-    // if (formData.education.length > 1) {
-    //   const newEducation = [...formData.education];
-    //   newEducation.splice(index, 1);
-    //   setFormData({
-    //     ...formData,
-    //     education: newEducation,
-    //   });
-    // }
-  };
-
-  const addExperience = () => {
-    // setFormData({
-    //   ...formData,
-    //   experience: [
-    //     ...formData.experience,
-    //     {
-    //       company: "",
-    //       position: "",
-    //       location: "",
-    //       startDate: "",
-    //       endDate: "",
-    //       description: "",
-    //     },
-    //   ],
-    // });
-  };
-
-  const removeExperience = (index: number) => {
-    // if (formData.experience.length > 1) {
-    //   const newExperience = [...formData.experience];
-    //   newExperience.splice(index, 1);
-    //   setFormData({
-    //     ...formData,
-    //     experience: newExperience,
-    //   });
-    // }
-  };
-
-  const addSkill = () => {
-    // setFormData({
-    //   ...formData,
-    //   skills: [...formData.skills, ""],
-    // });
-  };
-
-  const removeSkill = (index: number) => {
-    // if (formData.skills.length > 1) {
-    //   const newSkills = [...formData.skills];
-    //   newSkills.splice(index, 1);
-    //   setFormData({
-    //     ...formData,
-    //     skills: newSkills,
-    //   });
-    // }
-  };
-
   const exportToPDF = async () => {
-    // setPreviewOpen(true);
-    // // Wait for the dialog to be fully rendered
-    // await new Promise((resolve) => setTimeout(resolve, 100));
-    // try {
-    //   // Show loading toast
-    //   toast.loading("Generating PDF...");
-    //   // Get the preview element
-    //   const previewElement = document.getElementById("resume-preview");
-    //   if (!previewElement) {
-    //     throw new Error("Preview element not found");
-    //   }
-    //   // Create a canvas from the preview element
-    //   const canvas = await html2canvas(previewElement, {
-    //     scale: 2, // Higher scale for better quality
-    //     useCORS: true, // Enable CORS for images
-    //     logging: false,
-    //   });
-    //   // Create PDF with A4 dimensions
-    //   const pdf = new jsPDF({
-    //     orientation: "portrait",
-    //     unit: "mm",
-    //     format: "a4",
-    //   });
-    //   // Calculate dimensions to fit the content properly
-    //   const imgWidth = 210; // A4 width in mm
-    //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    //   // Add the image to the PDF
-    //   pdf.addImage(
-    //     canvas.toDataURL("image/jpeg", 1.0),
-    //     "JPEG",
-    //     0,
-    //     0,
-    //     imgWidth,
-    //     imgHeight
-    //   );
-    //   // Generate filename based on user's name or default
-    //   const filename = formData.personalInfo.name
-    //     ? `${formData.personalInfo.name
-    //         .toLowerCase()
-    //         .replace(/\s+/g, "-")}-resume.pdf`
-    //     : "resume.pdf";
-    //   // Save the PDF
-    //   pdf.save(filename);
-    //   toast.success("PDF downloaded successfully!");
-    // } catch (error) {
-    //   console.error("Error generating PDF:", error);
-    //   toast.error("Failed to generate PDF. Please try again.");
-    // } finally {
-    //   // Close the preview dialog
-    //   setPreviewOpen(false);
-    // }
+    setPreviewOpen(true);
+
+    // Wait for the dialog to be fully rendered
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      // Show loading toast
+      toast.loading("Generating PDF...");
+
+      // Get the preview element
+      const previewElement = document.getElementById("resume-preview");
+
+      if (!previewElement) {
+        throw new Error("Preview element not found");
+      }
+
+      // Create a canvas from the preview element
+      const canvas = await html2canvas(previewElement, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true, // Enable CORS for images
+        logging: false,
+      });
+
+      // Create PDF with A4 dimensions
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Calculate dimensions to fit the content properly
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Add the image to the PDF
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 1.0),
+        "JPEG",
+        0,
+        0,
+        imgWidth,
+        imgHeight
+      );
+
+      // Generate filename based on user's name or default
+      const filename = methods.getValues().personalInfo.name
+        ? `${methods
+            .getValues()
+            .personalInfo.name.toLowerCase()
+            .replace(/\s+/g, "-")}-resume.pdf`
+        : "resume.pdf";
+
+      // Save the PDF
+      pdf.save(filename);
+
+      toast.success("PDF downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+
+      toast.error("Failed to generate PDF. Please try again.");
+    } finally {
+      // Close the preview dialog
+      setPreviewOpen(false);
+    }
   };
 
-  const saveResume = () => {
-    // try {
-    //   // Save to localStorage
-    //   localStorage.setItem(
-    //     `resume-${resumeId}`,
-    //     JSON.stringify({
-    //       formData,
-    //       photo,
-    //       lastUpdated: new Date().toISOString(),
-    //     })
-    //   );
-    //   // If we're not already on a URL with this ID, update the URL
-    //   if (typeof window !== "undefined") {
-    //     const urlParams = new URLSearchParams(window.location.search);
-    //     if (urlParams.get("id") !== resumeId) {
-    //       router.push(`?id=${resumeId}`);
-    //     }
-    //   }
-    //   toast(
-    //     "Resume saved successfully! You can bookmark this URL to access your resume later."
-    //   );
-    // } catch (error) {
-    //   console.error("Error saving resume:", error);
-    //   alert("There was an error saving your resume. Please try again.");
-    // }
+  const saveResume = (data: IResumeData) => {
+    console.log(data);
+    console.log(methods.getValues());
+
+    try {
+      // Save to localStorage
+      localStorage.setItem(
+        `resume-${resumeId}`,
+        JSON.stringify({
+          formData: methods.getValues(),
+          photo,
+          lastUpdated: new Date().toISOString(),
+        })
+      );
+      // If we're not already on a URL with this ID, update the URL
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("id") !== resumeId) {
+          router.push(`?id=${resumeId}`);
+        }
+      }
+      toast(
+        "Resume saved successfully! You can bookmark this URL to access your resume later."
+      );
+    } catch (error) {
+      console.error("Error saving resume:", error);
+      alert("There was an error saving your resume. Please try again.");
+    }
   };
 
   const loadResume = (id: string) => {
-    // try {
-    //   const savedResume = localStorage.getItem(`resume-${id}`);
-    //   if (savedResume) {
-    //     const { formData: savedFormData, photo: savedPhoto } =
-    //       JSON.parse(savedResume);
-    //     setFormData(savedFormData);
-    //     setPhoto(savedPhoto);
-    //     return true;
-    //   }
-    //   return false;
-    // } catch (error) {
-    //   console.error("Error loading resume:", error);
-    //   return false;
-    // }
+    try {
+      const savedResume = localStorage.getItem(`resume-${id}`);
+
+      if (savedResume) {
+        const { formData: savedFormData, photo: savedPhoto } =
+          JSON.parse(savedResume);
+
+        methods.reset(savedFormData);
+        setPhoto(savedPhoto);
+
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error loading resume:", error);
+      return false;
+    }
   };
 
   useEffect(() => {
-    // if (typeof window !== "undefined") {
-    //   const urlParams = new URLSearchParams(window.location.search);
-    //   const id = urlParams.get("id");
-    //   if (id) {
-    //     setResumeId(id);
-    //     const loaded = loadResume(id);
-    //     if (!loaded) {
-    //       // If we couldn't load the resume with this ID, create a new one
-    //       setResumeId(uuidv4());
-    //     }
-    //   }
-    // }
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+      if (id) {
+        setResumeId(id);
+        const loaded = loadResume(id);
+        if (!loaded) {
+          // If we couldn't load the resume with this ID, create a new one
+          setResumeId(uuidv4());
+        }
+      }
+    }
   }, []);
 
   const handlePreFill = () => {
@@ -262,46 +232,6 @@ export default function Home() {
     });
   };
 
-  const methods = useForm<IResumeData>({
-    defaultValues: {
-      photo: "",
-      personalInfo: {
-        name: "",
-        title: "",
-        email: "",
-        phone: "",
-        address: "",
-        summary: "",
-      },
-      education: [
-        {
-          school: "",
-          degree: "",
-          fieldOfStudy: "",
-          startDate: "",
-          endDate: "",
-          description: "",
-        },
-      ],
-      experience: [
-        {
-          company: "",
-          position: "",
-          location: "",
-          startDate: "",
-          endDate: "",
-          description: "",
-        },
-      ],
-      skills: [""],
-    },
-  });
-
-  const onSubmit = (data) => {
-    console.log(data);
-    console.log(methods.getValues());
-  };
-
   return (
     <>
       <main className="flex-1">
@@ -313,7 +243,7 @@ export default function Home() {
           </h1>
 
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)}>
+            <form onSubmit={methods.handleSubmit(saveResume)}>
               <div className="flex flex-col lg:flex-row gap-6">
                 <div className="w-full lg:w-3/4">
                   <TabsWrapper />
@@ -325,6 +255,7 @@ export default function Home() {
                       <h3 className="font-medium text-center">Actions</h3>
 
                       <Button
+                        type="button"
                         onClick={() => setPreviewOpen(true)}
                         className="w-full"
                         variant="outline"
@@ -333,13 +264,16 @@ export default function Home() {
                         Preview Resume
                       </Button>
 
-                      <Button onClick={exportToPDF} className="w-full">
+                      <Button
+                        type="button"
+                        onClick={exportToPDF}
+                        className="w-full"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Export to PDF
                       </Button>
 
                       <Button
-                        // onClick={saveResume}
                         type="submit"
                         className="w-full"
                         variant="secondary"

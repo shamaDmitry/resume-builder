@@ -4,7 +4,6 @@ import PersonalTab from "@/components/custom/tabs/personal-tab";
 import EducationTab from "@/components/custom/tabs/education-tab";
 import ExperienceTab from "@/components/custom/tabs/experience-tab";
 import SkillsTab from "@/components/custom/tabs/skills-tab";
-import { useForm, FormProvider, useFormContext } from "react-hook-form";
 
 const TabsWrapper = () => {
   return (

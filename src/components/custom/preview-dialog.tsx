@@ -2,6 +2,7 @@ import React, { FC } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,12 +25,14 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
 }) => {
   return (
     <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Resume Preview</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-[70vh]">
+        <DialogDescription></DialogDescription>
+
+        <ScrollArea className="h-[70vh] pb-4">
           <div id="resume-preview" className="bg-white pr-4">
             <div className="flex flex-col md:flex-row gap-6 mb-6">
               {photo && (

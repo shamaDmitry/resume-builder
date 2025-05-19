@@ -8,9 +8,14 @@ import { Button } from "@/components/ui/button";
 interface UploadAvatarProps {
   photo: string | null;
   setPhoto: (photo: string | null) => void;
+  handlePhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const UploadAvatar: FC<UploadAvatarProps> = ({ photo }) => {
+const UploadAvatar: FC<UploadAvatarProps> = ({
+  photo,
+  setPhoto,
+  handlePhotoChange,
+}) => {
   return (
     <div className="flex flex-col items-center mb-4">
       <div className="relative size-32 rounded-full overflow-hidden border-2 border-gray-200 mb-2">
@@ -42,6 +47,7 @@ const UploadAvatar: FC<UploadAvatarProps> = ({ photo }) => {
           type="file"
           accept="image/*"
           className="hidden"
+          onChange={handlePhotoChange}
         />
         {photo && (
           <Button
