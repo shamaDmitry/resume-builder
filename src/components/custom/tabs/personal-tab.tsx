@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import FormError from "@/components/custom/form-error";
-import UploadAvatar from "../upload-avatar";
+import UploadAvatar from "@/components/custom/upload-avatar";
 import { IResumeData } from "@/types";
 
 const PersonalTab = () => {
@@ -17,33 +17,51 @@ const PersonalTab = () => {
   const {
     register,
     formState: { errors },
+    control,
   } = methods;
 
   const [photo, setPhoto] = useState<string | null>(null);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setPhoto(e.target.result as string);
-        }
-      };
+    const file = files[0];
+    if (!file) return;
 
-      reader.readAsDataURL(e.target.files[0]);
-    }
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = async () => {
+      const base64Image = reader.result as string;
+
+      console.log("base64Image", base64Image);
+
+      setPhoto(base64Image);
+    };
   };
-
   return (
     <TabsContent value="personal" className="space-y-4">
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            <UploadAvatar
-              photo={photo}
-              setPhoto={setPhoto}
-              handlePhotoChange={handlePhotoChange}
+            <Controller
+              name="photo"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <UploadAvatar
+                    {...field}
+                    photo={photo}
+                    setPhoto={setPhoto}
+                    onChange={(e) => {
+                      handlePhotoChange(e);
+                      field.onChange(e);
+                    }}
+                  />
+                );
+              }}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

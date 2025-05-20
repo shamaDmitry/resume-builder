@@ -15,7 +15,7 @@ const TabsWrapper = () => {
 
         <TabsTrigger value="experience">Experience</TabsTrigger>
 
-        <TabsTrigger value="skills">Skills</TabsTrigger>
+        <TabsTrigger value="personal-skills">Skills</TabsTrigger>
       </TabsList>
 
       <PersonalTab />

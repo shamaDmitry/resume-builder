@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import html2canvas from "html2canvas";
 import { Download, Eye, Save } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import jsPDF from "jspdf";
 import { IResumeData } from "@/types";
@@ -14,8 +13,11 @@ import { toast } from "sonner";
 import PreviewDialog from "@/components/custom/preview-dialog";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
   const methods = useForm<IResumeData>({
     defaultValues: {
       photo: "",
@@ -27,7 +29,7 @@ export default function Home() {
         address: "",
         summary: "",
       },
-      education: [
+      educations: [
         {
           school: "",
           degree: "",
@@ -37,7 +39,7 @@ export default function Home() {
           description: "",
         },
       ],
-      experience: [
+      experiences: [
         {
           company: "",
           position: "",
@@ -47,12 +49,17 @@ export default function Home() {
           description: "",
         },
       ],
-      skills: [""],
+      skills: [
+        {
+          name: "",
+        },
+      ],
     },
   });
-  const router = useRouter();
+
   const [photo, setPhoto] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+
   const [resumeId, setResumeId] = useState<string>(() => {
     // Check if we're in the browser and if there's an ID in the URL
     if (typeof window !== "undefined") {
@@ -131,19 +138,18 @@ export default function Home() {
   };
 
   const saveResume = (data: IResumeData) => {
-    console.log(data);
-    console.log(methods.getValues());
+    console.log("data", data);
 
     try {
-      // Save to localStorage
       localStorage.setItem(
         `resume-${resumeId}`,
         JSON.stringify({
-          formData: methods.getValues(),
+          formData: data,
           photo,
           lastUpdated: new Date().toISOString(),
         })
       );
+
       // If we're not already on a URL with this ID, update the URL
       if (typeof window !== "undefined") {
         const urlParams = new URLSearchParams(window.location.search);
@@ -151,6 +157,7 @@ export default function Home() {
           router.push(`?id=${resumeId}`);
         }
       }
+
       toast(
         "Resume saved successfully! You can bookmark this URL to access your resume later."
       );
@@ -174,9 +181,11 @@ export default function Home() {
 
           return true;
         }
+
         return false;
       } catch (error) {
         console.error("Error loading resume:", error);
+
         return false;
       }
     };
@@ -184,9 +193,11 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get("id");
+
       if (id) {
         setResumeId(id);
         const loaded = loadResume(id);
+
         if (!loaded) {
           // If we couldn't load the resume with this ID, create a new one
           setResumeId(uuidv4());
@@ -206,7 +217,7 @@ export default function Home() {
         summary:
           "Experienced developer with a passion for building web applications.",
       },
-      education: [
+      educations: [
         {
           school: "University of Example",
           degree: "Bachelor of Science",
@@ -216,7 +227,7 @@ export default function Home() {
           description: "Studied computer science and software engineering.",
         },
       ],
-      experience: [
+      experiences: [
         {
           company: "Example Inc.",
           position: "Software Engineer",
@@ -227,7 +238,13 @@ export default function Home() {
             "Worked on various web applications and contributed to open-source projects.",
         },
       ],
-      skills: ["JavaScript", "React", "Node.js", "HTML", "CSS"],
+      skills: [
+        { name: "JavaScript" },
+        { name: "React" },
+        { name: "Node.js" },
+        { name: "HTML" },
+        { name: "CSS" },
+      ],
     });
   };
 
@@ -249,7 +266,7 @@ export default function Home() {
                 </div>
 
                 <div className="w-full lg:w-1/4 space-y-4 mt-14">
-                  <Card>
+                  <Card className="sticky top-4">
                     <CardContent className="space-y-4">
                       <h3 className="font-medium text-center">Actions</h3>
 

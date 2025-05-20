@@ -25,12 +25,13 @@ export interface IExperience {
   description: string;
 }
 
-export type Skills = string[];
-
+export type ISkills = {
+  name: string;
+};
 export interface IResumeData {
   photo: string;
   personalInfo: IPersonalInfo;
-  education: IEducation[];
-  experience: IExperience[];
-  skills: Skills;
+  educations: IEducation[];
+  experiences: IExperience[];
+  skills: ISkills[];
 }

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { use } from "react";
-import { IResumeData } from "@/types";
+import { IResumeData, ISkills } from "@/types";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [loading, setLoading] = useState(true);
@@ -171,12 +171,12 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          {formData.experience.some((exp) => exp.company || exp.position) && (
+          {formData.experiences.some((exp) => exp.company || exp.position) && (
             <div className="mb-6">
               <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Work Experience
+                Work Experiences
               </h2>
-              {formData.experience.map(
+              {formData.experiences.map(
                 (exp, index: number) =>
                   (exp.company || exp.position) && (
                     <div key={index} className="mb-4">
@@ -206,12 +206,13 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          {formData.education.some((edu) => edu.school || edu.degree) && (
+          {formData.educations.some((edu) => edu.school || edu.degree) && (
             <div className="mb-6">
               <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Education
+                Educations
               </h2>
-              {formData.education.map(
+
+              {formData.educations.map(
                 (edu, index) =>
                   (edu.school || edu.degree) && (
                     <div key={index} className="mb-4">
@@ -241,20 +242,20 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          {formData.skills.some((skill: string) => skill) && (
+          {formData.skills.some((skill: ISkills) => skill) && (
             <div>
               <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                 Skills
               </h2>
               <div className="flex flex-wrap gap-2">
                 {formData.skills.map(
-                  (skill: string, index: number) =>
+                  (skill: ISkills, index: number) =>
                     skill && (
                       <span
                         key={index}
                         className="bg-gray-100 px-3 py-1 rounded-full text-sm"
                       >
-                        {skill}
+                        {skill.name}
                       </span>
                     )
                 )}

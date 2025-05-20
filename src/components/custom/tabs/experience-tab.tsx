@@ -4,29 +4,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { IResumeData } from "@/types";
 import { Trash2 } from "lucide-react";
 import React from "react";
+import { useFieldArray, useFormContext } from "react-hook-form";
 
 const ExperienceTab = () => {
+  const { register, control } = useFormContext<IResumeData>();
+
+  const { fields, remove, append } = useFieldArray({
+    name: "experiences",
+    control,
+  });
+
   return (
     <TabsContent value="experience" className="space-y-6">
-      {/* {formData?.experience?.map((exp, index) => ( */}
-      {[].map((exp, index) => (
+      {fields.map((exp, index) => (
         <Card key={index}>
           <CardContent className="pt-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-medium">Experience #{index + 1}</h3>
 
-              {/* {formData.experience && formData?.experience?.length > 1 && ( */}
-              <Button
-                variant="outline"
-                size="sm"
-                // onClick={() => removeExperience(index)}
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Remove
-              </Button>
-              {/* )} */}
+              {fields.length > 1 && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => remove(index)}
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -35,10 +43,8 @@ const ExperienceTab = () => {
 
                 <Input
                   id={`company-${index}`}
-                  name="company"
-                  // value={exp.company}
-                  // onChange={(e) => handleExperienceChange(index, e)}
                   placeholder="Google"
+                  {...register(`experiences.${index}.company`)}
                 />
               </div>
 
@@ -47,10 +53,8 @@ const ExperienceTab = () => {
 
                 <Input
                   id={`position-${index}`}
-                  name="position"
-                  // value={exp.position}
-                  // onChange={(e) => handleExperienceChange(index, e)}
                   placeholder="Software Engineer"
+                  {...register(`experiences.${index}.position`)}
                 />
               </div>
 
@@ -59,10 +63,8 @@ const ExperienceTab = () => {
 
                 <Input
                   id={`location-${index}`}
-                  name="location"
-                  // value={exp.location}
-                  // onChange={(e) => handleExperienceChange(index, e)}
                   placeholder="Mountain View, CA"
+                  {...register(`experiences.${index}.location`)}
                 />
               </div>
 
@@ -72,10 +74,8 @@ const ExperienceTab = () => {
 
                   <Input
                     id={`expStartDate-${index}`}
-                    name="startDate"
-                    // value={exp.startDate}
-                    // onChange={(e) => handleExperienceChange(index, e)}
                     placeholder="06/2022"
+                    {...register(`experiences.${index}.startDate`)}
                   />
                 </div>
 
@@ -84,10 +84,8 @@ const ExperienceTab = () => {
 
                   <Input
                     id={`expEndDate-${index}`}
-                    name="endDate"
-                    // value={exp.endDate}
-                    // onChange={(e) => handleExperienceChange(index, e)}
                     placeholder="Present"
+                    {...register(`experiences.${index}.endDate`)}
                   />
                 </div>
               </div>
@@ -97,11 +95,9 @@ const ExperienceTab = () => {
 
                 <Textarea
                   id={`expDescription-${index}`}
-                  name="description"
-                  // value={exp.description}
-                  // onChange={(e) => handleExperienceChange(index, e)}
                   placeholder="Describe your responsibilities, achievements, and the technologies you worked with..."
                   rows={4}
+                  {...register(`experiences.${index}.description`)}
                 />
               </div>
             </div>
@@ -109,12 +105,23 @@ const ExperienceTab = () => {
         </Card>
       ))}
 
-      <Button
-        // onClick={addExperience}
-        className="w-full"
-      >
-        Add Experience
-      </Button>
+      <div className="text-right">
+        <Button
+          type="button"
+          onClick={() => {
+            append({
+              company: "",
+              position: "",
+              location: "",
+              description: "",
+              startDate: "",
+              endDate: "",
+            });
+          }}
+        >
+          Add Experience
+        </Button>
+      </div>
     </TabsContent>
   );
 };

@@ -79,12 +79,15 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
               </div>
             )}
 
-            {formData.experience.some((exp) => exp.company || exp.position) && (
+            {formData.experiences.some(
+              (exp) => exp.company || exp.position
+            ) && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                  Work Experience
+                  Work Experiences
                 </h2>
-                {formData.experience.map(
+
+                {formData.experiences.map(
                   (exp, index) =>
                     (exp.company || exp.position) && (
                       <div key={index} className="mb-4">
@@ -93,11 +96,13 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
                             <h3 className="font-medium">
                               {exp.position || "Position"}
                             </h3>
+
                             <p className="text-sm">
                               {exp.company || "Company"}
                               {exp.location && `, ${exp.location}`}
                             </p>
                           </div>
+
                           {(exp.startDate || exp.endDate) && (
                             <p className="text-sm text-gray-600">
                               {exp.startDate || "Start Date"} -{" "}
@@ -115,13 +120,13 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
               </div>
             )}
 
-            {formData.education.some((edu) => edu.school || edu.degree) && (
+            {formData.educations.some((edu) => edu.school || edu.degree) && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                  Education
+                  Educations
                 </h2>
 
-                {formData.education.map(
+                {formData.educations.map(
                   (edu, index) =>
                     (edu.school || edu.degree) && (
                       <div key={index} className="mb-4">
@@ -131,10 +136,12 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
                               {edu.degree || "Degree"}
                               {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
                             </h3>
+
                             <p className="text-sm">
                               {edu.school || "School/University"}
                             </p>
                           </div>
+
                           {(edu.startDate || edu.endDate) && (
                             <p className="text-sm text-gray-600">
                               {edu.startDate || "Start Date"} -{" "}
@@ -142,6 +149,7 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
                             </p>
                           )}
                         </div>
+
                         {edu.description && (
                           <p className="text-sm mt-1">{edu.description}</p>
                         )}
@@ -151,11 +159,12 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
               </div>
             )}
 
-            {formData.skills.some((skill) => skill) && (
+            {formData.skills.some((skill) => skill.name) && (
               <div>
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Skills
                 </h2>
+
                 <div className="flex flex-wrap gap-2">
                   {formData.skills.map(
                     (skill, index) =>
@@ -164,7 +173,7 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
                           key={index}
                           className="bg-gray-100 px-3 py-1 rounded-full text-sm"
                         >
-                          {skill}
+                          {skill.name}
                         </span>
                       )
                   )}

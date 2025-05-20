@@ -4,17 +4,19 @@ import React, { FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ControllerRenderProps } from "react-hook-form";
 
-interface UploadAvatarProps {
+interface UploadAvatarProps extends ControllerRenderProps {
   photo: string | null;
   setPhoto: (photo: string | null) => void;
-  handlePhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const UploadAvatar: FC<UploadAvatarProps> = ({
   photo,
   setPhoto,
-  handlePhotoChange,
+  onChange,
+  ref,
 }) => {
   return (
     <div className="flex flex-col items-center mb-4">
@@ -43,12 +45,14 @@ const UploadAvatar: FC<UploadAvatarProps> = ({
         </Label>
 
         <Input
+          ref={ref}
           id="photo-upload"
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handlePhotoChange}
+          onChange={onChange}
         />
+
         {photo && (
           <Button
             variant="outline"
