@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import React, { useState } from "react";
+import React from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import FormError from "@/components/custom/form-error";
 import UploadAvatar from "@/components/custom/upload-avatar";
@@ -18,29 +18,9 @@ const PersonalTab = () => {
     register,
     formState: { errors },
     control,
+    getValues,
   } = methods;
 
-  const [photo, setPhoto] = useState<string | null>(null);
-
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const file = files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.readAsDataURL(file);
-
-    reader.onload = async () => {
-      const base64Image = reader.result as string;
-
-      console.log("base64Image", base64Image);
-
-      setPhoto(base64Image);
-    };
-  };
   return (
     <TabsContent value="personal" className="space-y-4">
       <Card>
@@ -53,12 +33,7 @@ const PersonalTab = () => {
                 return (
                   <UploadAvatar
                     {...field}
-                    photo={photo}
-                    setPhoto={setPhoto}
-                    onChange={(e) => {
-                      handlePhotoChange(e);
-                      field.onChange(e);
-                    }}
+                    value={getValues().photo || field.value}
                   />
                 );
               }}

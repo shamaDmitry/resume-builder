@@ -30,8 +30,6 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
           if (savedResume) {
             const parsed = JSON.parse(savedResume);
 
-            console.log("parsed", parsed);
-
             setResumeData(parsed);
             setLoading(false);
             return;

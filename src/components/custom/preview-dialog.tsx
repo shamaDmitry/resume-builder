@@ -14,14 +14,12 @@ interface PreviewDialogProps {
   previewOpen: boolean;
   setPreviewOpen: (open: boolean) => void;
   formData: IResumeData;
-  photo: string | null;
 }
 
 const PreviewDialog: FC<PreviewDialogProps> = ({
   previewOpen,
   setPreviewOpen,
   formData,
-  photo,
 }) => {
   return (
     <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
@@ -35,10 +33,10 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
         <ScrollArea className="h-[70vh] pb-4">
           <div id="resume-preview" className="bg-white pr-4">
             <div className="flex flex-col md:flex-row gap-6 mb-6">
-              {photo && (
+              {formData.photo && (
                 <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
                   <Image
-                    src={photo || "/placeholder.svg"}
+                    src={formData.photo || "/placeholder.svg"}
                     alt="Profile"
                     width={128}
                     height={128}

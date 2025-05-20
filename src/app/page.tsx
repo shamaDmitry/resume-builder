@@ -138,8 +138,6 @@ export default function Home() {
   };
 
   const saveResume = (data: IResumeData) => {
-    console.log("data", data);
-
     try {
       localStorage.setItem(
         `resume-${resumeId}`,
@@ -312,7 +310,6 @@ export default function Home() {
         previewOpen={previewOpen}
         setPreviewOpen={setPreviewOpen}
         formData={methods.getValues()}
-        photo={photo}
       />
     </>
   );
