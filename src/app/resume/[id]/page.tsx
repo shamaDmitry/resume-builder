@@ -2,26 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { use } from "react";
 import { IResumeData, ISkills } from "@/types";
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Image as PDFImage,
-  Font,
-} from "@react-pdf/renderer";
-import { PDFViewer } from "@react-pdf/renderer";
 
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import PdfDocument, { MyDocument } from "@/components/custom/base/pdf-document";
+import Link from "next/link";
+import PdfDownloadButton from "@/components/pdf-download-button";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [loading, setLoading] = useState(true);
@@ -36,7 +23,6 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   useEffect(() => {
     const loadResume = async () => {
       try {
-        // First try to load from localStorage
         if (typeof window !== "undefined") {
           const savedResume = localStorage.getItem(`resume-${id}`);
 
@@ -49,8 +35,6 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
           }
         }
 
-        // If not in localStorage, try to fetch from API
-        // In a real app, this would fetch from your database
         setError("Resume not found. Please check the ID and try again.");
         setLoading(false);
       } catch (error) {
@@ -62,41 +46,6 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
     loadResume();
   }, [id]);
-
-  const exportToPDF = async () => {
-    try {
-      const resumeElement = document.getElementById("resume-view");
-      if (!resumeElement) {
-        console.error("Resume element not found");
-        return;
-      }
-
-      const canvas = await html2canvas(resumeElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save(
-        `resume-${resumeData?.formData?.personalInfo?.name || "untitled"}.pdf`
-      );
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
-    }
-  };
 
   if (loading) {
     return (
@@ -130,38 +79,13 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <>
-      {/* <PDFViewer className="w-full h-screen mb-6">
-        <PdfDocument formData={formData} />
-      </PDFViewer> */}
-
       <div className="container mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Resume</h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold">Resume</h1>
+          </Link>
 
-          <PDFDownloadLink
-            document={<PdfDocument formData={formData} />}
-            fileName={`resume-${
-              formData?.personalInfo?.name || "untitled"
-            }.pdf`}
-          >
-            {({ blob, url, loading, error }) => {
-              console.log({
-                blob,
-                url,
-                loading,
-                error,
-              });
-
-              return loading ? (
-                "Loading document..."
-              ) : (
-                <Button>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
-              );
-            }}
-          </PDFDownloadLink>
+          <PdfDownloadButton formData={formData} isValid={true} />
         </div>
 
         <Card className="p-8 max-w-4xl mx-auto">
@@ -282,11 +206,12 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
               </div>
             )}
 
-            {formData.skills.some((skill: ISkills) => skill) && (
+            {formData.skills.some((skill: ISkills) => skill.name) && (
               <div>
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Skills
                 </h2>
+
                 <div className="flex flex-wrap gap-2">
                   {formData.skills.map(
                     (skill: ISkills, index: number) =>

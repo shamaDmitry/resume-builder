@@ -3,26 +3,17 @@
 import Footer from "@/components/custom/base/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import html2canvas from "html2canvas";
-import { Download, Eye, Save } from "lucide-react";
+import { Eye, EyeIcon, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import jsPDF from "jspdf";
 import { IResumeData } from "@/types";
 import { toast } from "sonner";
 import PreviewDialog from "@/components/custom/preview-dialog";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import PdfDocument from "@/components/custom/base/pdf-document";
-import dynamic from "next/dynamic";
-
-import { Suspense } from "react";
-
-const PDFDownloadLink = dynamic(
-  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
-  { ssr: false }
-);
+import PdfDownloadButton from "@/components/pdf-download-button";
+import { clipboardFallback } from "@/lib/clipboard-fallback";
 
 export default function Home() {
   const router = useRouter();
@@ -66,6 +57,8 @@ export default function Home() {
     },
   });
 
+  const formValues = methods.watch();
+
   const [photo, setPhoto] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -78,73 +71,6 @@ export default function Home() {
 
     return uuidv4();
   });
-
-  const exportToPDF = async () => {
-    setPreviewOpen(true);
-
-    // Wait for the dialog to be fully rendered
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    try {
-      // Show loading toast
-      toast.loading("Generating PDF...");
-
-      // Get the preview element
-      const previewElement = document.getElementById("resume-preview");
-
-      if (!previewElement) {
-        throw new Error("Preview element not found");
-      }
-
-      // Create a canvas from the preview element
-      const canvas = await html2canvas(previewElement, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true, // Enable CORS for images
-        logging: false,
-      });
-
-      // Create PDF with A4 dimensions
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      // Calculate dimensions to fit the content properly
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      // Add the image to the PDF
-      pdf.addImage(
-        canvas.toDataURL("image/jpeg", 1.0),
-        "JPEG",
-        0,
-        0,
-        imgWidth,
-        imgHeight
-      );
-
-      // Generate filename based on user's name or default
-      const filename = methods.getValues().personalInfo.name
-        ? `${methods
-            .getValues()
-            .personalInfo.name.toLowerCase()
-            .replace(/\s+/g, "-")}-resume.pdf`
-        : "resume.pdf";
-
-      // Save the PDF
-      pdf.save(filename);
-
-      toast.success("PDF downloaded successfully!");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-
-      toast.error("Failed to generate PDF. Please try again.");
-    } finally {
-      // Close the preview dialog
-      setPreviewOpen(false);
-    }
-  };
 
   const saveResume = (data: IResumeData) => {
     try {
@@ -166,10 +92,23 @@ export default function Home() {
         }
       }
 
-      const url = `${window.location.origin}?id=${resumeId}`;
-      navigator.clipboard.writeText(url);
+      const url = `${window.location.origin}/resume/${resumeId}`;
 
-      toast("Resume saved and link copied to clipboard! Share it with others.");
+      const copyToClipboard = (text: string) => {
+        if (navigator.clipboard) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => toast("Resume saved and link copied to clipboard!"))
+            .catch((err) => {
+              console.error("Clipboard write failed:", err);
+              clipboardFallback(text);
+            });
+        } else {
+          clipboardFallback(text);
+        }
+      };
+
+      copyToClipboard(url);
     } catch (error) {
       console.error("Error saving resume:", error);
       alert("There was an error saving your resume. Please try again.");
@@ -217,6 +156,7 @@ export default function Home() {
 
   const handlePreFill = () => {
     methods.reset({
+      photo: "",
       personalInfo: {
         name: "Name Surname",
         title: "developer",
@@ -290,48 +230,32 @@ export default function Home() {
                       </Button>
 
                       <Button
-                        type="button"
-                        onClick={exportToPDF}
-                        className="w-full"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export to PDF
-                      </Button>
-
-                      <Suspense
-                        fallback={
-                          <Button disabled>Loading PDF Download...</Button>
-                        }
-                      >
-                        <PDFDownloadLink
-                          document={
-                            <PdfDocument formData={methods.getValues()} />
-                          }
-                          fileName={`resume-${
-                            methods.getValues()?.personalInfo?.name ||
-                            "untitled"
-                          }.pdf`}
-                        >
-                          {({ blob, url, loading, error }) =>
-                            loading ? (
-                              "Loading document..."
-                            ) : (
-                              <Button>
-                                <Download className="w-4 h-4 mr-2" />
-                                Download PDF
-                              </Button>
-                            )
-                          }
-                        </PDFDownloadLink>
-                      </Suspense>
-
-                      <Button
                         type="submit"
                         className="w-full"
                         variant="secondary"
                       >
                         <Save className="w-4 h-4 mr-2" />
                         Save & Get Link
+                      </Button>
+
+                      {methods.formState.isValid && (
+                        <PdfDownloadButton
+                          formData={formValues}
+                          isValid={methods.formState.isValid}
+                        />
+                      )}
+
+                      <Button
+                        type="button"
+                        className="w-full"
+                        variant="default"
+                        disabled={!methods.formState.isSubmitted}
+                        onClick={() => {
+                          router.push(`/resume/${resumeId}`);
+                        }}
+                      >
+                        <EyeIcon className="w-4 h-4 mr-2" />
+                        View updated Resume
                       </Button>
                     </CardContent>
                   </Card>
