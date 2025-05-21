@@ -14,6 +14,15 @@ import PreviewDialog from "@/components/custom/preview-dialog";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import PdfDocument from "@/components/custom/base/pdf-document";
+import dynamic from "next/dynamic";
+
+import { Suspense } from "react";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 export default function Home() {
   const router = useRouter();
@@ -151,14 +160,16 @@ export default function Home() {
       // If we're not already on a URL with this ID, update the URL
       if (typeof window !== "undefined") {
         const urlParams = new URLSearchParams(window.location.search);
+
         if (urlParams.get("id") !== resumeId) {
           router.push(`?id=${resumeId}`);
         }
       }
 
-      toast(
-        "Resume saved successfully! You can bookmark this URL to access your resume later."
-      );
+      const url = `${window.location.origin}?id=${resumeId}`;
+      navigator.clipboard.writeText(url);
+
+      toast("Resume saved and link copied to clipboard! Share it with others.");
     } catch (error) {
       console.error("Error saving resume:", error);
       alert("There was an error saving your resume. Please try again.");
@@ -286,6 +297,33 @@ export default function Home() {
                         <Download className="w-4 h-4 mr-2" />
                         Export to PDF
                       </Button>
+
+                      <Suspense
+                        fallback={
+                          <Button disabled>Loading PDF Download...</Button>
+                        }
+                      >
+                        <PDFDownloadLink
+                          document={
+                            <PdfDocument formData={methods.getValues()} />
+                          }
+                          fileName={`resume-${
+                            methods.getValues()?.personalInfo?.name ||
+                            "untitled"
+                          }.pdf`}
+                        >
+                          {({ blob, url, loading, error }) =>
+                            loading ? (
+                              "Loading document..."
+                            ) : (
+                              <Button>
+                                <Download className="w-4 h-4 mr-2" />
+                                Download PDF
+                              </Button>
+                            )
+                          }
+                        </PDFDownloadLink>
+                      </Suspense>
 
                       <Button
                         type="submit"

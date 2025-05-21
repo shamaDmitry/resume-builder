@@ -9,6 +9,19 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { use } from "react";
 import { IResumeData, ISkills } from "@/types";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image as PDFImage,
+  Font,
+} from "@react-pdf/renderer";
+import { PDFViewer } from "@react-pdf/renderer";
+
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PdfDocument, { MyDocument } from "@/components/custom/base/pdf-document";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [loading, setLoading] = useState(true);
@@ -113,156 +126,186 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const { formData, photo } = resumeData;
+  const { formData } = resumeData;
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Resume</h1>
-        <Button onClick={exportToPDF}>
-          <Download className="w-4 h-4 mr-2" />
-          Download PDF
-        </Button>
-      </div>
+    <>
+      {/* <PDFViewer className="w-full h-screen mb-6">
+        <PdfDocument formData={formData} />
+      </PDFViewer> */}
 
-      <Card className="p-8 max-w-4xl mx-auto">
-        <div id="resume-view" className="bg-white">
-          <div className="flex flex-col md:flex-row gap-6 mb-6">
-            {photo && (
-              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
-                <Image
-                  src={photo || "/placeholder.svg"}
-                  alt="Profile"
-                  width={128}
-                  height={128}
-                  className="object-cover"
-                />
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Resume</h1>
+
+          <PDFDownloadLink
+            document={<PdfDocument formData={formData} />}
+            fileName={`resume-${
+              formData?.personalInfo?.name || "untitled"
+            }.pdf`}
+          >
+            {({ blob, url, loading, error }) => {
+              console.log({
+                blob,
+                url,
+                loading,
+                error,
+              });
+
+              return loading ? (
+                "Loading document..."
+              ) : (
+                <Button>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download PDF
+                </Button>
+              );
+            }}
+          </PDFDownloadLink>
+        </div>
+
+        <Card className="p-8 max-w-4xl mx-auto">
+          <div className="bg-white">
+            <div className="flex flex-col md:flex-row gap-6 mb-6">
+              {formData.photo && (
+                <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
+                  <Image
+                    src={formData.photo || "/placeholder.svg"}
+                    alt="Profile"
+                    width={128}
+                    height={128}
+                    className="object-cover size-full"
+                  />
+                </div>
+              )}
+
+              <div className="flex-grow text-center md:text-left">
+                <h1 className="text-2xl font-bold">
+                  {formData.personalInfo.name || "Your Name"}
+                </h1>
+                <p className="text-gray-600 mb-2">
+                  {formData.personalInfo.title || "Professional Title"}
+                </p>
+                <div className="text-sm space-y-1">
+                  {formData.personalInfo.email && (
+                    <p>{formData.personalInfo.email}</p>
+                  )}
+                  {formData.personalInfo.phone && (
+                    <p>{formData.personalInfo.phone}</p>
+                  )}
+                  {formData.personalInfo.address && (
+                    <p>{formData.personalInfo.address}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {formData.personalInfo.summary && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                  Professional Summary
+                </h2>
+                <p className="text-sm">{formData.personalInfo.summary}</p>
               </div>
             )}
-            <div className="flex-grow text-center md:text-left">
-              <h1 className="text-2xl font-bold">
-                {formData.personalInfo.name || "Your Name"}
-              </h1>
-              <p className="text-gray-600 mb-2">
-                {formData.personalInfo.title || "Professional Title"}
-              </p>
-              <div className="text-sm space-y-1">
-                {formData.personalInfo.email && (
-                  <p>{formData.personalInfo.email}</p>
-                )}
-                {formData.personalInfo.phone && (
-                  <p>{formData.personalInfo.phone}</p>
-                )}
-                {formData.personalInfo.address && (
-                  <p>{formData.personalInfo.address}</p>
-                )}
-              </div>
-            </div>
-          </div>
 
-          {formData.personalInfo.summary && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Professional Summary
-              </h2>
-              <p className="text-sm">{formData.personalInfo.summary}</p>
-            </div>
-          )}
-
-          {formData.experiences.some((exp) => exp.company || exp.position) && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Work Experiences
-              </h2>
-              {formData.experiences.map(
-                (exp, index: number) =>
-                  (exp.company || exp.position) && (
-                    <div key={index} className="mb-4">
-                      <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                        <div>
-                          <h3 className="font-medium">
-                            {exp.position || "Position"}
-                          </h3>
-                          <p className="text-sm">
-                            {exp.company || "Company"}
-                            {exp.location && `, ${exp.location}`}
-                          </p>
+            {formData.experiences.some(
+              (exp) => exp.company || exp.position
+            ) && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                  Work Experiences
+                </h2>
+                {formData.experiences.map(
+                  (exp, index: number) =>
+                    (exp.company || exp.position) && (
+                      <div key={index} className="mb-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
+                          <div>
+                            <h3 className="font-medium">
+                              {exp.position || "Position"}
+                            </h3>
+                            <p className="text-sm">
+                              {exp.company || "Company"}
+                              {exp.location && `, ${exp.location}`}
+                            </p>
+                          </div>
+                          {(exp.startDate || exp.endDate) && (
+                            <p className="text-sm text-gray-600">
+                              {exp.startDate || "Start Date"} -{" "}
+                              {exp.endDate || "End Date"}
+                            </p>
+                          )}
                         </div>
-                        {(exp.startDate || exp.endDate) && (
-                          <p className="text-sm text-gray-600">
-                            {exp.startDate || "Start Date"} -{" "}
-                            {exp.endDate || "End Date"}
-                          </p>
+                        {exp.description && (
+                          <p className="text-sm mt-1">{exp.description}</p>
                         )}
                       </div>
-                      {exp.description && (
-                        <p className="text-sm mt-1">{exp.description}</p>
-                      )}
-                    </div>
-                  )
-              )}
-            </div>
-          )}
-
-          {formData.educations.some((edu) => edu.school || edu.degree) && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Educations
-              </h2>
-
-              {formData.educations.map(
-                (edu, index) =>
-                  (edu.school || edu.degree) && (
-                    <div key={index} className="mb-4">
-                      <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                        <div>
-                          <h3 className="font-medium">
-                            {edu.degree || "Degree"}
-                            {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
-                          </h3>
-                          <p className="text-sm">
-                            {edu.school || "School/University"}
-                          </p>
-                        </div>
-                        {(edu.startDate || edu.endDate) && (
-                          <p className="text-sm text-gray-600">
-                            {edu.startDate || "Start Date"} -{" "}
-                            {edu.endDate || "End Date"}
-                          </p>
-                        )}
-                      </div>
-                      {edu.description && (
-                        <p className="text-sm mt-1">{edu.description}</p>
-                      )}
-                    </div>
-                  )
-              )}
-            </div>
-          )}
-
-          {formData.skills.some((skill: ISkills) => skill) && (
-            <div>
-              <h2 className="text-lg font-semibold border-b pb-1 mb-2">
-                Skills
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {formData.skills.map(
-                  (skill: ISkills, index: number) =>
-                    skill && (
-                      <span
-                        key={index}
-                        className="bg-gray-100 px-3 py-1 rounded-full text-sm"
-                      >
-                        {skill.name}
-                      </span>
                     )
                 )}
               </div>
-            </div>
-          )}
-        </div>
-      </Card>
-    </div>
+            )}
+
+            {formData.educations.some((edu) => edu.school || edu.degree) && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                  Educations
+                </h2>
+
+                {formData.educations.map(
+                  (edu, index) =>
+                    (edu.school || edu.degree) && (
+                      <div key={index} className="mb-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
+                          <div>
+                            <h3 className="font-medium">
+                              {edu.degree || "Degree"}
+                              {edu.fieldOfStudy && ` in ${edu.fieldOfStudy}`}
+                            </h3>
+                            <p className="text-sm">
+                              {edu.school || "School/University"}
+                            </p>
+                          </div>
+                          {(edu.startDate || edu.endDate) && (
+                            <p className="text-sm text-gray-600">
+                              {edu.startDate || "Start Date"} -{" "}
+                              {edu.endDate || "End Date"}
+                            </p>
+                          )}
+                        </div>
+                        {edu.description && (
+                          <p className="text-sm mt-1">{edu.description}</p>
+                        )}
+                      </div>
+                    )
+                )}
+              </div>
+            )}
+
+            {formData.skills.some((skill: ISkills) => skill) && (
+              <div>
+                <h2 className="text-lg font-semibold border-b pb-1 mb-2">
+                  Skills
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map(
+                    (skill: ISkills, index: number) =>
+                      skill && (
+                        <span
+                          key={index}
+                          className="bg-gray-100 px-3 py-1 rounded-full text-sm"
+                        >
+                          {skill.name}
+                        </span>
+                      )
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+    </>
   );
 };
 
