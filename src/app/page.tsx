@@ -197,6 +197,8 @@ export default function Home() {
     });
   };
 
+  console.log("methods", methods.formState.isValid);
+
   return (
     <>
       <main className="flex-1">
@@ -238,24 +240,17 @@ export default function Home() {
                         Save & Get Link
                       </Button>
 
-                      {methods.formState.isValid && (
-                        <PdfDownloadButton
-                          formData={formValues}
-                          isValid={methods.formState.isValid}
-                        />
-                      )}
-
                       <Button
                         type="button"
                         className="w-full"
                         variant="default"
-                        disabled={!methods.formState.isSubmitted}
+                        disabled={!methods.formState.isSubmitSuccessful}
                         onClick={() => {
                           router.push(`/resume/${resumeId}`);
                         }}
                       >
                         <EyeIcon className="w-4 h-4 mr-2" />
-                        View updated Resume
+                        View Resume
                       </Button>
                     </CardContent>
                   </Card>

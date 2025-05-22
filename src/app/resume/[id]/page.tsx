@@ -6,19 +6,48 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { use } from "react";
 import { IResumeData, ISkills } from "@/types";
-
+import { pdf } from "@react-pdf/renderer";
+import PdfDocument from "@/components/custom/base/pdf-document";
+import { Download } from "lucide-react";
 import Link from "next/link";
-import PdfDownloadButton from "@/components/pdf-download-button";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const [resumeData, setResumeData] = useState<{
     formData: IResumeData;
     photo: string | null;
     lastUpdated: string;
   } | null>(null);
+
   const [error, setError] = useState<string | null>(null);
-  const { id } = use(params);
+
+  const handleDownload = async () => {
+    if (!resumeData) return;
+
+    try {
+      setIsGenerating(true);
+      const blob = await pdf(
+        <PdfDocument formData={resumeData.formData} />
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `resume-${
+        resumeData.formData.personalInfo.name || "untitled"
+      }.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   useEffect(() => {
     const loadResume = async () => {
@@ -27,7 +56,11 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
           const savedResume = localStorage.getItem(`resume-${id}`);
 
           if (savedResume) {
-            const parsed = JSON.parse(savedResume);
+            const parsed: {
+              formData: IResumeData;
+              photo: string | null;
+              lastUpdated: string;
+            } = JSON.parse(savedResume);
 
             setResumeData(parsed);
             setLoading(false);
@@ -39,6 +72,7 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
         setLoading(false);
       } catch (error) {
         console.error("Error loading resume:", error);
+
         setError("An error occurred while loading the resume.");
         setLoading(false);
       }
@@ -75,26 +109,27 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const { formData } = resumeData;
-
   return (
     <>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <Link href="/">
             <h1 className="text-2xl font-bold">Resume</h1>
           </Link>
 
-          <PdfDownloadButton formData={formData} isValid={true} />
+          <Button onClick={handleDownload} disabled={isGenerating}>
+            <Download className="w-4 h-4 mr-2" />
+            {isGenerating ? "Generating PDF..." : "Download"}
+          </Button>
         </div>
 
         <Card className="p-8 max-w-4xl mx-auto">
           <div className="bg-white">
             <div className="flex flex-col md:flex-row gap-6 mb-6">
-              {formData.photo && (
+              {resumeData.formData.photo && (
                 <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 mx-auto md:mx-0">
                   <Image
-                    src={formData.photo || "/placeholder.svg"}
+                    src={resumeData.formData.photo || "/placeholder.svg"}
                     alt="Profile"
                     width={128}
                     height={128}
@@ -105,42 +140,51 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
               <div className="flex-grow text-center md:text-left">
                 <h1 className="text-2xl font-bold">
-                  {formData.personalInfo.name || "Your Name"}
+                  {resumeData.formData.personalInfo.name || "Your Name"}
                 </h1>
+
                 <p className="text-gray-600 mb-2">
-                  {formData.personalInfo.title || "Professional Title"}
+                  {resumeData.formData.personalInfo.title ||
+                    "Professional Title"}
                 </p>
+
                 <div className="text-sm space-y-1">
-                  {formData.personalInfo.email && (
-                    <p>{formData.personalInfo.email}</p>
+                  {resumeData.formData.personalInfo.email && (
+                    <p>{resumeData.formData.personalInfo.email}</p>
                   )}
-                  {formData.personalInfo.phone && (
-                    <p>{formData.personalInfo.phone}</p>
+
+                  {resumeData.formData.personalInfo.phone && (
+                    <p>{resumeData.formData.personalInfo.phone}</p>
                   )}
-                  {formData.personalInfo.address && (
-                    <p>{formData.personalInfo.address}</p>
+
+                  {resumeData.formData.personalInfo.address && (
+                    <p>{resumeData.formData.personalInfo.address}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            {formData.personalInfo.summary && (
+            {resumeData.formData.personalInfo.summary && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Professional Summary
                 </h2>
-                <p className="text-sm">{formData.personalInfo.summary}</p>
+
+                <p className="text-sm">
+                  {resumeData.formData.personalInfo.summary}
+                </p>
               </div>
             )}
 
-            {formData.experiences.some(
+            {resumeData.formData.experiences.some(
               (exp) => exp.company || exp.position
             ) && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Work Experiences
                 </h2>
-                {formData.experiences.map(
+
+                {resumeData.formData.experiences.map(
                   (exp, index: number) =>
                     (exp.company || exp.position) && (
                       <div key={index} className="mb-4">
@@ -149,11 +193,13 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
                             <h3 className="font-medium">
                               {exp.position || "Position"}
                             </h3>
+
                             <p className="text-sm">
                               {exp.company || "Company"}
                               {exp.location && `, ${exp.location}`}
                             </p>
                           </div>
+
                           {(exp.startDate || exp.endDate) && (
                             <p className="text-sm text-gray-600">
                               {exp.startDate || "Start Date"} -{" "}
@@ -161,6 +207,7 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
                             </p>
                           )}
                         </div>
+
                         {exp.description && (
                           <p className="text-sm mt-1">{exp.description}</p>
                         )}
@@ -170,13 +217,15 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
               </div>
             )}
 
-            {formData.educations.some((edu) => edu.school || edu.degree) && (
+            {resumeData.formData.educations.some(
+              (edu) => edu.school || edu.degree
+            ) && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Educations
                 </h2>
 
-                {formData.educations.map(
+                {resumeData.formData.educations.map(
                   (edu, index) =>
                     (edu.school || edu.degree) && (
                       <div key={index} className="mb-4">
@@ -206,14 +255,16 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
               </div>
             )}
 
-            {formData.skills.some((skill: ISkills) => skill.name) && (
+            {resumeData.formData.skills.some(
+              (skill: ISkills) => skill.name
+            ) && (
               <div>
                 <h2 className="text-lg font-semibold border-b pb-1 mb-2">
                   Skills
                 </h2>
 
                 <div className="flex flex-wrap gap-2">
-                  {formData.skills.map(
+                  {resumeData.formData.skills.map(
                     (skill: ISkills, index: number) =>
                       skill && (
                         <span
