@@ -12,8 +12,8 @@ import PreviewDialog from "@/components/custom/preview-dialog";
 import TabsWrapper from "@/components/custom/tabs/tabs-wrapper";
 import { FormProvider, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import PdfDownloadButton from "@/components/pdf-download-button";
 import { clipboardFallback } from "@/lib/clipboard-fallback";
+import Navigation from "@/components/custom/base/navigation";
 
 export default function Home() {
   const router = useRouter();
@@ -56,8 +56,6 @@ export default function Home() {
       ],
     },
   });
-
-  const formValues = methods.watch();
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -197,17 +195,19 @@ export default function Home() {
     });
   };
 
-  console.log("methods", methods.formState.isValid);
-
   return (
     <>
+      <Navigation />
+
       <main className="flex-1">
         <div className="container mx-auto py-8 px-4">
           <h1 className="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
             <span>Resume Builder</span>
-
-            <Button onClick={handlePreFill}>Pre-fill</Button>
           </h1>
+
+          <div className="flex items-center justify-center gap-4">
+            <Button onClick={handlePreFill}>Pre-fill</Button>
+          </div>
 
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(saveResume)}>

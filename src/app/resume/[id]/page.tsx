@@ -8,11 +8,13 @@ import { use } from "react";
 import { IResumeData, ISkills } from "@/types";
 import { pdf } from "@react-pdf/renderer";
 import PdfDocument from "@/components/custom/base/pdf-document";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -97,10 +99,12 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
       <div className="container mx-auto py-16 px-4 flex justify-center">
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold mb-2">Resume Not Found</h2>
+
           <p className="mb-4">
             {error ||
               "This resume could not be found. Please check the URL and try again."}
           </p>
+
           <Button onClick={() => (window.location.href = "/")}>
             Create a New Resume
           </Button>
@@ -117,10 +121,21 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
             <h1 className="text-2xl font-bold">Resume</h1>
           </Link>
 
-          <Button onClick={handleDownload} disabled={isGenerating}>
-            <Download className="w-4 h-4 mr-2" />
-            {isGenerating ? "Generating PDF..." : "Download"}
-          </Button>
+          <div className="gap-4 flex">
+            <Button onClick={handleDownload} disabled={isGenerating}>
+              <Download className="w-4 h-4 " />
+              {isGenerating ? "Generating PDF..." : "Download"}
+            </Button>
+
+            <Button
+              onClick={() => {
+                router.replace("/");
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              Create new
+            </Button>
+          </div>
         </div>
 
         <Card className="p-8 max-w-4xl mx-auto">

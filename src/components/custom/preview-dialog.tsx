@@ -40,7 +40,7 @@ const PreviewDialog: FC<PreviewDialogProps> = ({
                     alt="Profile"
                     width={128}
                     height={128}
-                    className="object-cover"
+                    className="object-cover size-full"
                   />
                 </div>
               )}

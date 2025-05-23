@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Copy, Globe } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,14 +52,20 @@ export default function DeployPage() {
   };
 
   const goToResume = () => {
-    router.push(`/?id=${resumeId}`);
+    router.push(`/resume/${resumeId}`);
   };
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Deploy Your Resume
-      </h1>
+      <div className="mb-6 flex items-center justify-center gap-5">
+        <Button size="icon" variant="outline" onClick={() => router.back()}>
+          <ArrowLeft />
+        </Button>
+
+        <h1 className="text-3xl font-bold text-center w-full">
+          Deploy Your Resume
+        </h1>
+      </div>
 
       <Card className="mb-6">
         <CardHeader>
