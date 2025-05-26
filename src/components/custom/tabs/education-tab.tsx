@@ -8,8 +8,9 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 import React from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { IEducation, IResumeData } from "@/types";
+import FormDatePicker from "@/components/custom/form-date-picker";
 
 const EducationTab = () => {
   const { register, control } = useFormContext<IResumeData>();
@@ -74,23 +75,43 @@ const EducationTab = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label htmlFor={`startDate-${index}`}>Start Date</Label>
+                  <div>
+                    <Label htmlFor={`startDate-${index}`} className="mb-2">
+                      Start Date
+                    </Label>
 
-                    <Input
-                      id={`startDate-${index}`}
-                      {...register(`educations.${index}.startDate`)}
-                      placeholder="09/2018"
+                    <Controller
+                      name={`educations.${index}.startDate`}
+                      control={control}
+                      render={({ field }) => {
+                        return (
+                          <FormDatePicker
+                            id={`startDate-${index}`}
+                            {...field}
+                            value={field.value ? new Date(field.value) : null}
+                          />
+                        );
+                      }}
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                  <div>
+                    <Label htmlFor={`endDate-${index}`} className="mb-2">
+                      End Date
+                    </Label>
 
-                    <Input
-                      id={`endDate-${index}`}
-                      {...register(`educations.${index}.endDate`)}
-                      placeholder="05/2022 or Present"
+                    <Controller
+                      name={`educations.${index}.endDate`}
+                      control={control}
+                      render={({ field }) => {
+                        return (
+                          <FormDatePicker
+                            id={`endDate-${index}`}
+                            {...field}
+                            value={field.value ? new Date(field.value) : null}
+                          />
+                        );
+                      }}
                     />
                   </div>
                 </div>

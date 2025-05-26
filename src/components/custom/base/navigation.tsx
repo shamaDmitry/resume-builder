@@ -3,7 +3,7 @@ import React from "react";
 
 const Navigation = () => {
   return (
-    <div className="py-2 px-4 border-b border-primary text-primary">
+    <div className="py-2 px-4 border-b text-primary">
       <nav className="flex justify-end items-center container mx-auto">
         <Link
           href="/deploy"

@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { IResumeData } from "@/types";
 import { Trash2 } from "lucide-react";
 import React from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import FormDatePicker from "../form-date-picker";
 
 const ExperienceTab = () => {
   const { register, control } = useFormContext<IResumeData>();
@@ -69,23 +70,43 @@ const ExperienceTab = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor={`expStartDate-${index}`}>Start Date</Label>
+                <div>
+                  <Label htmlFor={`expStartDate-${index}`} className="mb-2">
+                    Start Date
+                  </Label>
 
-                  <Input
-                    id={`expStartDate-${index}`}
-                    placeholder="06/2022"
-                    {...register(`experiences.${index}.startDate`)}
+                  <Controller
+                    name={`experiences.${index}.startDate`}
+                    control={control}
+                    render={({ field }) => {
+                      return (
+                        <FormDatePicker
+                          id={`startDate-${index}`}
+                          {...field}
+                          value={field.value ? new Date(field.value) : null}
+                        />
+                      );
+                    }}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`expEndDate-${index}`}>End Date</Label>
+                <div>
+                  <Label htmlFor={`expEndDate-${index}`} className="mb-2">
+                    End Date
+                  </Label>
 
-                  <Input
-                    id={`expEndDate-${index}`}
-                    placeholder="Present"
-                    {...register(`experiences.${index}.endDate`)}
+                  <Controller
+                    name={`experiences.${index}.endDate`}
+                    control={control}
+                    render={({ field }) => {
+                      return (
+                        <FormDatePicker
+                          id={`endDate-${index}`}
+                          {...field}
+                          value={field.value ? new Date(field.value) : null}
+                        />
+                      );
+                    }}
                   />
                 </div>
               </div>

@@ -9,6 +9,7 @@ import {
   Image as PDFImage,
 } from "@react-pdf/renderer";
 import Link from "next/link";
+import dayjs from "dayjs";
 
 interface DocumentProps {
   formData: IResumeData | null;
@@ -137,11 +138,14 @@ const PdfDocument: FC<DocumentProps> = ({ formData }) => {
                   <Text style={styles.title}>{exp.position}</Text>
 
                   <Text style={styles.contactInfo}>{exp.company}</Text>
+
                   {(exp.startDate || exp.endDate) && (
                     <Text style={styles.contactInfo}>
-                      {exp.startDate} - {exp.endDate}
+                      {dayjs(exp.startDate).format("MMMM D, YYYY")} -{" "}
+                      {dayjs(exp.endDate).format("MMMM D, YYYY")}
                     </Text>
                   )}
+
                   {exp.description && <Text>{exp.description}</Text>}
                 </View>
               ))}
@@ -155,13 +159,16 @@ const PdfDocument: FC<DocumentProps> = ({ formData }) => {
               {formData.educations.map((edu, index) => (
                 <View key={index}>
                   <Text style={styles.title}>{edu.degree}</Text>
+
                   <Text style={styles.contactInfo}>{edu.school}</Text>
 
                   {(edu.startDate || edu.endDate) && (
                     <Text style={styles.contactInfo}>
-                      {edu.startDate} - {edu.endDate}
+                      {dayjs(edu.startDate).format("MMMM D, YYYY")} -{" "}
+                      {dayjs(edu.endDate).format("MMMM D, YYYY")}
                     </Text>
                   )}
+
                   {edu.description && <Text>{edu.description}</Text>}
                 </View>
               ))}

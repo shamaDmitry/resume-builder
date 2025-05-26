@@ -71,6 +71,8 @@ export default function Home() {
   });
 
   const saveResume = (data: IResumeData) => {
+    console.log("data", data);
+
     try {
       localStorage.setItem(
         `resume-${resumeId}`,
@@ -86,7 +88,7 @@ export default function Home() {
         const urlParams = new URLSearchParams(window.location.search);
 
         if (urlParams.get("id") !== resumeId) {
-          router.push(`?id=${resumeId}`);
+          router.push(`/resume/${resumeId}`);
         }
       }
 
@@ -205,7 +207,7 @@ export default function Home() {
             <span>Resume Builder</span>
           </h1>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 mb-4">
             <Button onClick={handlePreFill}>Pre-fill</Button>
           </div>
 
@@ -216,7 +218,7 @@ export default function Home() {
                   <TabsWrapper />
                 </div>
 
-                <div className="w-full lg:w-1/4 space-y-4 mt-14">
+                <div className="w-full lg:w-1/4 space-y-4 mt-20">
                   <Card className="sticky top-4">
                     <CardContent className="space-y-4">
                       <h3 className="font-medium text-center">Actions</h3>

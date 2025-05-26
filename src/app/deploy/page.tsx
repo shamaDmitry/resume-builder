@@ -52,7 +52,7 @@ export default function DeployPage() {
   };
 
   const goToResume = () => {
-    router.push(`/resume/${resumeId}`);
+    router.push(`/?id=${resumeId}`);
   };
 
   return (
@@ -93,7 +93,7 @@ export default function DeployPage() {
             </div>
 
             <p className="text-sm text-gray-500">
-              This is the ID from your resume URL (the part after ?id=)
+              This is the ID from your resume URL (/resume/:id)
             </p>
           </div>
 

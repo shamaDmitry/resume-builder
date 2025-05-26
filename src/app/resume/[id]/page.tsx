@@ -11,6 +11,7 @@ import PdfDocument from "@/components/custom/base/pdf-document";
 import { Download, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -217,8 +218,11 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
                           {(exp.startDate || exp.endDate) && (
                             <p className="text-sm text-gray-600">
-                              {exp.startDate || "Start Date"} -{" "}
-                              {exp.endDate || "End Date"}
+                              {dayjs(exp.startDate).format("MMMM D, YYYY") ||
+                                "Start Date"}{" "}
+                              -{" "}
+                              {dayjs(exp.endDate).format("MMMM D, YYYY") ||
+                                "End Date"}
                             </p>
                           )}
                         </div>
@@ -256,11 +260,17 @@ const ResumePage = ({ params }: { params: Promise<{ id: string }> }) => {
                           </div>
                           {(edu.startDate || edu.endDate) && (
                             <p className="text-sm text-gray-600">
-                              {edu.startDate || "Start Date"} -{" "}
-                              {edu.endDate || "End Date"}
+                              {dayjs(edu.startDate, "MM-DD-YYYY").format(
+                                "MMMM D, YYYY"
+                              ) || "Start Date"}{" "}
+                              -{" "}
+                              {dayjs(edu.endDate, "MM-DD-YYYY").format(
+                                "MMMM D, YYYY"
+                              ) || "End Date"}
                             </p>
                           )}
                         </div>
+
                         {edu.description && (
                           <p className="text-sm mt-1">{edu.description}</p>
                         )}
